@@ -16,3 +16,9 @@ Install with your favorite package manager (e.g.
   end
 }
 ```
+
+# Acknowledgements
+
+Thanks to [folke](https://github.com/folke) and
+[noice.nvim](https://github.com/folke/noice.nvim) for the original work from
+which this project was based on!
