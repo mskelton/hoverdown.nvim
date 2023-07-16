@@ -2,11 +2,17 @@ local markdown = require("hoverdown.markdown")
 
 local M = {}
 
-local function on_hover(_, result, _, config)
-	local silent = config and config.silent
+local function on_hover(_, result, ctx, config)
+	config = config or {}
+	config.focus_id = ctx.method
+
+	-- Ignore result since buffer changed. This happens for slow language servers.
+	if vim.api.nvim_get_current_buf() ~= ctx.bufnr then
+		return
+	end
 
 	if not (result and result.contents) then
-		if silent ~= true then
+		if config.silent ~= true then
 			vim.notify("No information available")
 		end
 		return
@@ -16,7 +22,7 @@ local function on_hover(_, result, _, config)
 	local lines = markdown.format(contents.kind, contents.value)
 
 	if vim.tbl_isempty(lines) then
-		if silent ~= true then
+		if config.silent ~= true then
 			vim.notify("No information available")
 		end
 		return
