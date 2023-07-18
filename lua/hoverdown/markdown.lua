@@ -14,7 +14,7 @@ function M.is_empty(line)
 	return line and line:find("^%s*$")
 end
 
----@param text string
+---@param text any
 function M.html_entities(text)
 	local entities = {
 		nbsp = "",
@@ -34,9 +34,10 @@ function M.html_entities(text)
 	return text
 end
 
----@param kind string
----@param text string
+---@param kind any
+---@param text any
 function M.parse(kind, text)
+	-- local text = vim.lsp.util.convert_input_to_markdown_lines(contents)
 	text = text:gsub("</?pre>", "```"):gsub("\r", "")
 	text = M.html_entities(text)
 
@@ -106,35 +107,32 @@ function M.parse(kind, text)
 	return ret
 end
 
---- @param kind string
---- @param text string
---- @param ctx table
-M.format = function(kind, text, ctx)
-	local ret = {}
-	local parsed = M.parse(kind, text)
-
-	local overrides = config.get("overrides")
-	local override = overrides[ctx.ft] or overrides["*"]
-
-	if override ~= nil then
-		parsed = override(parsed)
+--- @param contents any
+M.format = function(contents)
+	if type(contents) ~= "table" or not vim.tbl_islist(contents) then
+		contents = { contents }
 	end
 
-	for _, block in ipairs(parsed) do
-		if block.type == "code_block" then
-			table.insert(ret, "```" .. block.lang)
+	local parts = {}
 
-			for _, line in ipairs(block.code) do
-				table.insert(ret, line)
-			end
-
-			table.insert(ret, "```")
+	for _, content in ipairs(contents) do
+		if type(content) == "string" then
+			table.insert(parts, content)
+		elseif content.language then
+			local lang = content.language
+			table.insert(parts, ("```%s\n%s\n```"):format(lang, content.value))
+		elseif content.kind == "markdown" then
+			table.insert(parts, content.value)
+		elseif content.kind == "plaintext" then
+			table.insert(parts, ("```\n%s\n```"):format(content.value))
+		elseif vim.tbl_islist(content) then
+			vim.list_extend(parts, M.format_markdown(content))
 		else
-			table.insert(ret, block.value)
+			error("Unknown markup " .. vim.inspect(content))
 		end
 	end
 
-	return ret
+	return vim.split(table.concat(parts, "\n"), "\n")
 end
 
 return M

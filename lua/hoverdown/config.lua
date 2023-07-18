@@ -9,7 +9,7 @@ M.load = function(config)
 	M._config = vim.tbl_deep_extend("force", M._config, config)
 end
 
---- @param key string
+--- @param key any
 --- @return any
 M.get = function(key)
 	local res = M._config

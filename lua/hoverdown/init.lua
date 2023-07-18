@@ -37,7 +37,13 @@ end
 M.setup = function(conf)
 	config.load(conf)
 
-	vim.lsp.handlers["textDocument/hover"] = on_hover
+	---@diagnostic disable-next-line: duplicate-set-field
+	vim.lsp.util.convert_input_to_markdown_lines = function(input, contents)
+		contents = contents or {}
+		local ret = markdown.format(input)
+		vim.list_extend(contents, ret)
+		return contents
+	end
 end
 
 return M
