@@ -126,7 +126,7 @@ M.format = function(contents)
 		elseif content.kind == "plaintext" then
 			table.insert(parts, ("```\n%s\n```"):format(content.value))
 		elseif vim.tbl_islist(content) then
-			vim.list_extend(parts, M.format_markdown(content))
+			vim.list_extend(parts, M.format(content))
 		else
 			error("Unknown markup " .. vim.inspect(content))
 		end
